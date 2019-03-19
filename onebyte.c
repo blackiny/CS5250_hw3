@@ -12,7 +12,7 @@ matric Id : A0191527B
 #include <linux/types.h>
 #include <linux/fs.h>
 #include <linux/proc_fs.h>
-#include <asm/uaccess.h>
+#include <linux/uaccess.h>
 
 #define MAJOR_NUMBER 61
 
@@ -43,13 +43,15 @@ int onebyte_release(struct inode *inode, struct file *filep){
 
 ssize_t onebyte_read(struct file *filep, char *buf, size_t count, loff_t *f_pos){
 	int bytes_read = 0;
-	char* msg_ptr = onebyte_data 
+	char *msg_ptr = onebyte_data;
 	/* Put data in the buffer */
-	if(count>=1){
-		// can only read one byte, using put_user function
-		put_user(*msg_ptr, buf);
-		bytes_read = 1;
-	}
+	while (count) {
+ /* Buffer is in user data, not kernel, so you can¡¯t just reference
+ * with a pointer. The function put_user handles this for us */
+ put_user(*msg_ptr, buf++);
+ count--;
+ bytes_read++;
+ }
 	return bytes_read;
 }
 
@@ -62,9 +64,9 @@ ssize_t onebyte_write(struct file *filep, const char *buf, size_t count, loff_t 
     	}
     	else
         	n = count;
-    	char* msg_ptr = onebyte_data;
-	// use get_user function to write from buffer to device
-    	get_user(*buf, msg_ptr);
+    	char *msg_ptr = onebyte_data;
+	// use put_user function to write from buffer to device
+    	put_user(*buf, msg_ptr);
     	return count;
 }
 
