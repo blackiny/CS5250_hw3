@@ -47,10 +47,12 @@ ssize_t onebyte_read(struct file *filep, char *buf, size_t count, loff_t *f_pos)
 	if(*f_pos == 0){
 		// if need to read >= 1 bytes, only read one byte
 		if (count>=1){
+			// if read unsuccessful, return
 			if (copy_to_user(buf, onebyte_data, 1) != 0)
 				return -EFAULT;	
 			bytes_read = 1;
 		}
+		//add 1 to pos
 		(*f_pos)++;		
 	}
 	// else do nothing
