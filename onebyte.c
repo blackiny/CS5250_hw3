@@ -43,31 +43,37 @@ int onebyte_release(struct inode *inode, struct file *filep){
 
 ssize_t onebyte_read(struct file *filep, char *buf, size_t count, loff_t *f_pos){
 	int bytes_read = 0;
-	char *msg_ptr = onebyte_data;
-	/* Put data in the buffer */
-	while (count) {
- /* Buffer is in user data, not kernel, so you can¡¯t just reference
- * with a pointer. The function put_user handles this for us */
- put_user(*msg_ptr, buf++);
- count--;
- bytes_read++;
- }
+	// if f_pos at begining
+	if(*f_pos == 0){
+		// if need to read >= 1 bytes, only read one byte
+		if (count>=1){
+			if (copy_to_user(buf, onebyte_data, 1) != 0)
+				return -EFAULT;	
+			bytes_read = 1;
+		}
+		(*f_pos)++;		
+	}
+	// else do nothing
 	return bytes_read;
 }
 
 ssize_t onebyte_write(struct file *filep, const char *buf, size_t count, loff_t *f_pos){
-	size_t n;
-	if(count > 1) {
-		// if a process want to write more than one bytes, only write first one and ignore others
-        	n = 1;
-		printk(KERN_ALERT "Only write the first byte, remaining data are missing! \n");
-    	}
-    	else
-        	n = count;
-    	char *msg_ptr = onebyte_data;
-	// use put_user function to write from buffer to device
-    	put_user(*buf, msg_ptr);
-    	return count;
+	int bytes_write = 0;
+	// if f_pos at begining
+	if(*f_pos == 0){
+		// if need to write >= 1 bytes, only write one byte
+		if (count>=1){
+			if (copy_to_user(onebyte_data, buf, 1) != 0)
+				return -EFAULT;	
+			bytes_write = 1;
+		}
+		// if > 1 bytes to write, give a kernel alert!
+		if (count>1)
+			printk(KERN_ALERT "Only write the first byte, remaining data are missing! \n");
+		(*f_pos)++;		
+	}
+	// else do nothing
+	return bytes_write;
 }
 
 static int onebyte_init(void){
