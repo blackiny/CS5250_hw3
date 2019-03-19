@@ -67,13 +67,13 @@ ssize_t onebyte_write(struct file *filep, const char *buf, size_t count, loff_t 
 				return -EFAULT;	
 			bytes_write = 1;
 		}
-		// if > 1 bytes to write, give a kernel alert!
+		// if > 1 bytes to write, throw an error!
 		if (count>1)
-			printk(KERN_ALERT "Only write the first byte, remaining data are missing! \n");
+			return -ENOSPC;
 		(*f_pos)++;		
 	}
 	// else do nothing
-	return count;
+	return bytes_write;
 }
 
 static int onebyte_init(void){
