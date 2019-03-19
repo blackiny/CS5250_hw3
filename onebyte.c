@@ -63,8 +63,8 @@ ssize_t onebyte_write(struct file *filep, const char *buf, size_t count, loff_t 
     	else
         	n = count;
     	char* msg_ptr = onebyte_data;
-	// use copy_from_user function to write from buffer to device
-    	copy_from_user(msg_ptr, buf, n);
+	// use get_user function to write from buffer to device
+    	get_user(*buf, msg_ptr);
     	return count;
 }
 
