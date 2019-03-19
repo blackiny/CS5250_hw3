@@ -63,7 +63,7 @@ ssize_t onebyte_write(struct file *filep, const char *buf, size_t count, loff_t 
 	if(*f_pos == 0){
 		// if need to write >= 1 bytes, only write one byte
 		if (count>=1){
-			if (copy_to_user(onebyte_data, buf, 1) != 0)
+			if (copy_from_user(onebyte_data, buf, 1) != 0)
 				return -EFAULT;	
 			bytes_write = 1;
 		}
@@ -73,7 +73,7 @@ ssize_t onebyte_write(struct file *filep, const char *buf, size_t count, loff_t 
 		(*f_pos)++;		
 	}
 	// else do nothing
-	return bytes_write;
+	return count;
 }
 
 static int onebyte_init(void){
